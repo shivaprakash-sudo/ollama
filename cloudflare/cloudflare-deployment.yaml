@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+      - name: cloudflared
+        image: cloudflare/cloudflared:latest  # Make sure this image is available or create one
+        args:
+        - tunnel
+        - run
+        - 28601063-4444-4f0d-abe7-c65d019c0cdf
+        env:
+        - name: TUNNEL_ORIGIN_CERT
+          value: "/etc/cloudflared/cert.pem"
+        - name: TUNNEL_ORIGIN_KEY
+          value: "/etc/cloudflared/key.pem"
+        - name: TUNNEL_URL
+          value: "http://nginx-service:80"
+        - name: TUNNEL_TOKEN
+          value: "eyJhIjoiZjg3NDRlMWI3OTNhMjAwZGNiNjAwZGYzMzg2YzFkZTIiLCJ0IjoiYTQ4ZTI4M2UtMjViMy00ZWNhLWE1ZTgtY2RjY2RiMDRiNWIyIiwicyI6IlptWmxNelF3WkRrdFlUQTNNQzAwWmpFMUxUZ3lObUV0WkdZell6WTFaVEF5WXpnMyJ9"
+        volumeMounts:
+          - name: cert-volume
+            mountPath: /etc/cloudflared
+            readOnly: true
+      volumes:
+      - name: cert-volume
+        secret:
+          secretName: cloudflared-cert
